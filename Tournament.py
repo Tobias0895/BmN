@@ -1,8 +1,19 @@
+from typing import Type
 import game
 import os
 import numpy as np
-contestent_list = ['Kristian', 'Xavier', 'Dhwanil', 'Kelly', 'Paul', 'Luna', 'Dion', 'Puck', 'Yannick', 'Eirini', 'Francesco', 'Sam', 'Suzanne', 'Tobias']
+import argparse
 
+parser = argparse.ArgumentParser(description='Hold a Beggar my neighbor competition')
+parser.add_argument('-con', '--contestants', type=str, help='File containing the contestants')
+args = parser.parse_args()
+
+try:
+    cf= open(args.contestants, 'r')
+    contestent_list = np.char.array(cf.readlines()).replace('\n', '')
+    cf.close()
+except TypeError:
+    contestent_list = ['Kristian', 'Xavier', 'Dhwanil', 'Kelly', 'Paul', 'Luna', 'Dion', 'Puck', 'Yannick', 'Eirini', 'Francesco', 'Sam', 'Suzanne', 'Tobias']
 
 win_counts = np.zeros(len(contestent_list))
 for i in range(len(contestent_list)):

@@ -6,6 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Hold a Beggar my neighbor competition')
 parser.add_argument('-con', '--contestants', type=str, help='File containing the contestants')
+parser.add_argument('-t', '--tie-breaker', type=bool, help='If the game should be repeated to break all the ties', default=False)
 args = parser.parse_args()
 
 try:
@@ -44,10 +45,34 @@ for i in range(len(contestent_list)):
 
 
 zipped = zip(win_counts, contestent_list)
-sort_by_wins = sorted(zipped, key=lambda x: -x[0])
+wins, participants = zip(*sorted(zipped, key=lambda x: -x[0]))
+wins = np.array(wins)
+if args.tie_breaker:
+    while np.unique(wins).size != len(wins):
+        for i, (score, contestent) in enumerate(zip(wins, participants)):
+            for j in range(i + 1, len(wins)):
+                if wins[j] == score: # There is a tie
+                    g = game.Game(c1, c2)
+                    winner, cards_played = g.play_game()
+                    if winner.name == contestent:
+                        wins[i] += 1
+                    else:
+                        wins[j] += 1
+                    score = wins[i]
+                    if wins[i-1] == score: # previous tie breaker has tied you again with the previous contestant
+                        g = game.Game(c1, c2)
+                        winner, cards_played = g.play_game()
+                        if winner.name == contestent:
+                            wins[i] += 1
+                        else:
+                            wins[i-1] += 1
+        
 
-for i, (score, contestent) in enumerate(sort_by_wins):
+
+    zipped = zip(wins, contestent_list)
+    wins, participants = zip(*sorted(zipped, key=lambda x: -x[0]))
+print('Total games played:', np.sum(wins))
+for i, (score, contestent) in enumerate(zip(wins, participants)):
     score_file = f'{os.getcwd()}/results/End_scores.txt' 
-
     with open(score_file, '+a') as sf:
         sf.write(f'{i + 1}. {contestent} With {score} wins! \n')
